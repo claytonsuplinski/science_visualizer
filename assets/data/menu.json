@@ -1,0 +1,72 @@
+{
+	"contents" : [
+		{
+			"name"     : "Chemistry",
+			"children" : [
+				{ "name" : "Elements" , "custom" : "elements"  },
+				{ "name" : "Molecules", "custom" : "molecules" },
+				{
+					"name"     : "Chemical Reactions",
+					"children" : []
+				}
+			]
+		},
+		{
+			"name"     : "Physics",
+			"children" : [
+				{ "name" : "Elementary particles", "custom" : "elementary_particles" },
+				{
+					"name"     : "Particle Physics",
+					"children" : []
+				},
+				{
+					"name"     : "Classical mechanics",
+					"children" : [
+						{ "name" : "Projectile Motion", "custom" : "" }
+					]
+				},
+				{
+					"name"     : "Electromagnetism",
+					"children" : [
+						{ "name" : "Electromagnetic Field" }
+					]
+				},
+				{
+					"name"     : "Thermodynamics",
+					"children" : []
+				},
+				{
+					"name"     : "Optics",
+					"children" : []
+				},
+				{
+					"name"     : "Quantum Mechanics",
+					"children" : []
+				},
+				{
+					"name"     : "Relativity",
+					"children" : []
+				}
+			]
+		},
+		{
+			"name"     : "Astronomy",
+			"children" : [
+				{ "name" : "Solar System" },
+				{ "name" : "Galaxy"       },
+				{ "name" : "Universe"     },
+				{ "name" : "Planets"      },
+				{ "name" : "Moons"        },
+				{ "name" : "Asteroids"    },
+				{ "name" : "Stars"        }
+			]
+		},
+		{
+			"name"     : "Math",
+			"children" : [
+				{ "name" : "Integrals"   },
+				{ "name" : "Derivatives" }
+			]
+		}
+	]
+}
