@@ -104,7 +104,8 @@ JL.webgl.ui.item.landing.ui_onselect = function(){
 						var include = {
 							environment : [ g.name, c.name ].map( x => JL.functions.str_to_id( x ) ).join(','),
 						};
-						if( c_2.item !== undefined ) include.item = c_2.item;
+						if     ( c_2.item !== undefined ) include.item = c_2.item;
+						else if( c_2.name !== undefined ) include.environment += ',' + JL.functions.str_to_id( c_2.name );
 
 						return '<a href="' + JL.webgl.hashlinks.get_url({ include, }) + '">' + c_2.name + '</a>';
 					}).join(''),

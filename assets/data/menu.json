@@ -22,13 +22,14 @@
 				{
 					"name"     : "Classical mechanics",
 					"children" : [
-						{ "name" : "Projectile Motion", "custom" : "" }
+						{ "name" : "Projectile Motion" }
 					]
 				},
 				{
 					"name"     : "Electromagnetism",
 					"children" : [
-						{ "name" : "Electromagnetic Field" }
+						{ "name" : "Electromagnetic Field" },
+						{ "name" : "Circuits", "_comment" : "Handle: AC/DC currents, resistors, capacitors, transistors, transformers, energy lost" }
 					]
 				},
 				{
@@ -38,6 +39,12 @@
 				{
 					"name"     : "Optics",
 					"children" : []
+				},
+				{
+					"name"     : "Acoustics",
+					"children" : [
+						{ "name" : "Fourier Transforms", "_comment" : "Deconstructing arbitrary audio into a set of waves and then reconstructing the audio with those same waves." }
+					]
 				},
 				{
 					"name"     : "Quantum Mechanics",
@@ -52,20 +59,19 @@
 		{
 			"name"     : "Astronomy",
 			"children" : [
+				{ "name" : "Stars"        },
 				{ "name" : "Solar System" },
 				{ "name" : "Galaxy"       },
 				{ "name" : "Universe"     },
 				{ "name" : "Planets"      },
 				{ "name" : "Moons"        },
-				{ "name" : "Asteroids"    },
-				{ "name" : "Stars"        }
+				{ "name" : "Asteroids"    }
 			]
 		},
 		{
 			"name"     : "Math",
 			"children" : [
-				{ "name" : "Integrals"   },
-				{ "name" : "Derivatives" }
+				{ "name" : "Fractals" }
 			]
 		}
 	]

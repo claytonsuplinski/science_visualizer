@@ -6,6 +6,18 @@ JL.webgl.init({
 					steps : [
 						{
 							init : function(callback){
+								JL.webgl.functions.create_background({
+									name             : 'grid',
+									graphics_objects : [{
+										type       : 'sphere',
+										segs       : 12,
+										radius     : 99999,
+										properties : { effects : [ '_no_fog', '_plain', '_texture_repeat', ],  },
+										textures   : [{ filename : './assets/textures/grid_background.jpg' }],
+										attr       : { frags_float : { texture_repeat : 32, } },
+									}],
+								});
+
 								$.ajax({
 									url      : './assets/data/menu.json',
 									dataType : 'json',
@@ -32,7 +44,8 @@ JL.webgl.init({
 	controllers : {},
 	hashlinks   : {
 		params : {
-			item : {},
+			item   : {},
+			config : { json : true, },
 		},
 	},
 	keyboard    : {

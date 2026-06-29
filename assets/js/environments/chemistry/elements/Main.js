@@ -1,7 +1,7 @@
 JL.webgl.functions.init_environment( [ 'chemistry', 'elements' ], {
 	background  : [],
 	lights      : [{ position : [ 100, 100, 100 ], ambient : 0.2, color : [ 0.8, 0.8, 0.8 ] }],
-	load_groups : [ 'Chemistry Elements' ],
+	load_groups : [ 'Shared', 'Chemistry Elements' ],
 });
 
 JL.webgl.environments.chemistry.elements.load = function(){

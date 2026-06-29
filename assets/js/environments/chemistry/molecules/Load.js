@@ -5,18 +5,6 @@ Object.assign( JL.webgl.load.groups, {
 				init : function(callback){
 					var self = this;
 
-					JL.webgl.functions.create_background({
-						name             : 'grid',
-						graphics_objects : [{
-							type       : 'sphere',
-							segs       : 12,
-							radius     : 99999,
-							properties : { effects : [ '_no_fog', '_plain', '_texture_repeat', ],  },
-							textures   : [{ filename : './assets/textures/grid_background.jpg' }],
-							attr       : { frags_float : { texture_repeat : 32, } },
-						}],
-					});
-
 					var smiles = JL.webgl.hashlinks.get_val( 'item' );
 
 					JL.chemistry.parse_smiles({ smiles, callback : function( molecule ){
@@ -86,6 +74,7 @@ Object.assign( JL.webgl.load.groups, {
 						JL.webgl.load.graphics_objects_list( self, [
 							{ keys : [ 'double_bond' ], type : 'cube', params : { properties : { effects : [ '_plain' ], color : '0.7, 1.0, 0.7, 1.0' }, x : 1, y : 1, z : 1, transforms : [{ type : 'translate', y : 3 },{ type : 'copies', copies : [{ transforms : [{ type : 'translate', y : -6 }] }] },] } },
 							{ keys : [ 'triple_bond' ], type : 'cube', params : { properties : { effects : [ '_plain' ], color : '1.0, 0.7, 0.7, 1.0' }, x : 1, y : 1, z : 1, transforms : [{ type : 'copies', copies : [{ transforms : [{ type : 'translate', y : -6 }] },{ transforms : [{ type : 'translate', y : 6 }] }] },] } },
+							{ keys : [ 'quadruple_bond' ], type : 'cube', params : { properties : { effects : [ '_plain' ], color : '0.7, 0.7, 1.0, 1.0' }, x : 1, y : 1, z : 1, transforms : [{ type : 'translate', y : 3 },{ type : 'copies', copies : [{ transforms : [{ type : 'translate', y : 6 }] },{ transforms : [{ type : 'translate', y : -6 }] },{ transforms : [{ type : 'translate', y : -12 }] }] },] } },
 						]);
 
 						var font_texture = JL.functions.font_to_canvas({
@@ -106,8 +95,8 @@ Object.assign( JL.webgl.load.groups, {
 									{ type : 'font'        , filename : font_texture },
 									{ type : 'encoded_text', filename : JL.webgl.functions.encode_text_to_pixels({ text : molecule.atoms.map(function( atom ){ return atom.config.symbol; }).join('') }) },
 								],
-								properties      : { effects : [ '_plain', '_instanced_text', '_instanced_pos', '_instanced_size', '_instanced_impostor_xyz' ] },
-								dynamic_buffers : [ "pos", "size" ],
+								properties      : { effects : [ '_plain', '_instanced_text', '_instanced_pos', '_instanced_impostor_xyz' ] },
+								dynamic_buffers : [ "pos" ],
 								clamp_textures  : true,
 								transforms      : [{ type : 'scale', x : 8 * s, y : 0.5 * s, z : 8 * s },],
 								custom_init     : function(){
@@ -115,7 +104,6 @@ Object.assign( JL.webgl.load.groups, {
 
 									molecule.atoms.forEach(function( atom ){
 										this.pos.push( atom.x, atom.y, atom.z );
-										this.size.push( 1 );
 										this.char_offset.push( char_offset );
 										this.str_len.push(     atom.symbol.length );
 										char_offset         += atom.symbol.length;
