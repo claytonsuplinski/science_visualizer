@@ -4462,16 +4462,20 @@ JL.json_edit.prototype.assign_values = function( p ){
 				input_val = JL.functions.get_nested_object( values, path );
 			}
 
-			if(          input.condition ){
-				if( !input.condition({
-					structure  : input,
-					path,
-					value      : input_val,
-					json_edit  : self,
-					root_value : values,
-				}) ){
-					continue;
-				}
+			if(
+				(
+					input.condition && !input.condition({
+						path,
+						structure    : input,
+						value        : input_val,
+						root_value   : values,
+						json_edit    : self,
+						obj          : self.get_value( path ),
+					})
+				) ||
+				( input.condition_obj && !self.eval_condition_obj( input, path ) )
+			){
+				continue;
 			}
 
 			var val;
@@ -4684,6 +4688,17 @@ JL.json_edit.prototype.set_parent = function( parent ){
 	this.root_id = this.parent.id + ' .jl-json-edit';
 };
 
+JL.json_edit.prototype.eval_condition_obj = function( structure, path ){
+	var obj = this.get_value( path );
+	if( obj ){
+		var cfg = structure.condition_obj;
+
+		return Object.keys( cfg ).every(function( k ){
+			return cfg[k].includes( obj[k] );
+		});
+	}
+};
+
 JL.json_edit.prototype.guess_structure = function( key, value ){
 	var structure = {};
 
@@ -4818,7 +4833,9 @@ JL.json_edit.prototype.set_value = function( p ){
 						});
 					}
 				}
-				if( obj.redraw_json_edit_on_change ) this.draw();
+				// 2026-06-29 -- made dropdowns always update json_edit on change, since that behavior was being used a lot in g_o edit.
+				if( obj.redraw_json_edit_on_change || p.structure.type == 'dropdown' ) this.draw();
+				// if( obj.redraw_json_edit_on_change ) this.draw();
 				else{
 					$( '#' + this.get_id( p.path ) ).val( val );
 				}
@@ -5530,16 +5547,20 @@ JL.json_edit.prototype.get_html = function( _params ){
 		lbl      : [],
 	};
 
-	if(          structure.condition ){
-		if( !structure.condition({
-			structure, path, value,
-			json_edit  : this,
-			root_value : this.value,
-		}) ){
-			if( structure.key ) path.push( structure.key );
-			this.remove_value( path );
-			return '';
-		}
+	if(
+		(
+			structure.condition && !structure.condition({
+				structure, path, value,
+				json_edit  : this,
+				root_value : this.value,
+				obj        : self.get_value( path ),
+			})
+		) || 
+		( structure.condition_obj && !self.eval_condition_obj( structure, path ) )
+	){
+		if( structure.key ) path.push( structure.key );
+		this.remove_value( path );
+		return '';
 	}
 
 	if( structure.get_structure ){ // Useful for recursive structures.
@@ -17567,37 +17588,37 @@ JL.webgl.graphics_object._main.prototype._inputs = [
 				'cut_xy', 'cut_xz', 'cut_yz',
 				'heightmap',
 			], },
-			{ key : 'axis'           , type : 'dropdown'             ,               condition : function(p){ return [ 'rotate', 'subdivide', 'profile',                        ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, default_first : 1, options : ['x','y','z'], },
-			{ key : 'val'            , type : 'float'                , optional : 1, condition : function(p){ return [ 'rotate', 'scale', 'vt_rotate', 'vt_scale', 'subdivide', ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'x'              , type : 'float'                , optional : 1, condition : function(p){ return [ 'translate', 'scale', 'vt_translate', 'vt_scale'         ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'y'              , type : 'float'                , optional : 1, condition : function(p){ return [ 'translate', 'scale', 'vt_translate', 'vt_scale'         ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'z'              , type : 'float'                , optional : 1, condition : function(p){ return [ 'translate', 'scale'                                     ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'angle'          , type : 'float'                , default :180, condition : function(p){ return [ 'curl_x', 'curl_y', 'curl_z',                            ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'rad'            , type : 'float'                , default :  0, condition : function(p){ return [ 'curl_x', 'curl_y', 'curl_z',                            ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'percent'        , type : 'float'                , min:0, max:1, condition : function(p){ return [ 'decimate',                                              ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'filename'       , type : 'str'                  ,               condition : function(p){ return [ 'heightmap',                                             ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'mag'            , type : 'float'                , default :  1, condition : function(p){ return [ 'heightmap',                                             ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'axis_dir'       , type : 'dropdown'             ,               condition : function(p){ return [ 'heightmap',                                             ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, default_first : 1, options : ['+x','+y','+z','-x','-y','-z'], },
-			{ key : 'height_format'  , type : 'dropdown'             , optional : 1, condition : function(p){ return [ 'heightmap',                                             ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, options : ['grayscale','rgb',] },
-			{ key : 'trim_alpha'     , type : 'int'                  , optional : 1, condition : function(p){ return [ 'heightmap',                                             ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'num_segs'       , type : 'int'                  , default :  2, condition : function(p){ return [ 'x_segs', 'y_segs', 'z_segs',                            ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, min : 2, },
-			{ key : 'graphics_object', type : 'webgl.graphics_object',               condition : function(p){ return [ 'subtract', 'intersect', 'union'                         ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, },
-			{ key : 'points'         , type : 'arr',                                 condition : function(p){ return [ 'cut_xy', 'cut_xz', 'cut_yz'                             ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); },
+			{ key : 'axis'           , type : 'dropdown'             ,               condition_obj : { type : [ 'rotate', 'subdivide', 'profile',                        ] }, default_first : 1, options : ['x','y','z'], },
+			{ key : 'val'            , type : 'float'                , optional : 1, condition_obj : { type : [ 'rotate', 'scale', 'vt_rotate', 'vt_scale', 'subdivide', ] }, },
+			{ key : 'x'              , type : 'float'                , optional : 1, condition_obj : { type : [ 'translate', 'scale', 'vt_translate', 'vt_scale'         ] }, },
+			{ key : 'y'              , type : 'float'                , optional : 1, condition_obj : { type : [ 'translate', 'scale', 'vt_translate', 'vt_scale'         ] }, },
+			{ key : 'z'              , type : 'float'                , optional : 1, condition_obj : { type : [ 'translate', 'scale'                                     ] }, },
+			{ key : 'angle'          , type : 'float'                , default :180, condition_obj : { type : [ 'curl_x', 'curl_y', 'curl_z',                            ] }, },
+			{ key : 'rad'            , type : 'float'                , default :  0, condition_obj : { type : [ 'curl_x', 'curl_y', 'curl_z',                            ] }, },
+			{ key : 'percent'        , type : 'float'                , min:0, max:1, condition_obj : { type : [ 'decimate',                                              ] }, },
+			{ key : 'filename'       , type : 'str'                  ,               condition_obj : { type : [ 'heightmap',                                             ] }, },
+			{ key : 'mag'            , type : 'float'                , default :  1, condition_obj : { type : [ 'heightmap',                                             ] }, },
+			{ key : 'axis_dir'       , type : 'dropdown'             ,               condition_obj : { type : [ 'heightmap',                                             ] }, default_first : 1, options : ['+x','+y','+z','-x','-y','-z'], },
+			{ key : 'height_format'  , type : 'dropdown'             , optional : 1, condition_obj : { type : [ 'heightmap',                                             ] }, options : ['grayscale','rgb',] },
+			{ key : 'trim_alpha'     , type : 'int'                  , optional : 1, condition_obj : { type : [ 'heightmap',                                             ] }, },
+			{ key : 'num_segs'       , type : 'int'                  , default :  2, condition_obj : { type : [ 'x_segs', 'y_segs', 'z_segs',                            ] }, min : 2, },
+			{ key : 'graphics_object', type : 'webgl.graphics_object',               condition_obj : { type : [ 'subtract', 'intersect', 'union'                         ] }, },
+			{ key : 'points'         , type : 'arr',                                 condition_obj : { type : [ 'cut_xy', 'cut_xz', 'cut_yz'                             ] },
 				graph     : { type : "line_graph", x : 0, y : 1 },
 				structure : { type : 'arr', length : 2, get_default : function(){ return [0,0]; }, no_label : 1, structure : { type : 'float', }, }
 			},
-			{ key : 'scales'         , type : 'arr',                                 condition : function(p){ return [ 'profile'                                                ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); },
+			{ key : 'scales'         , type : 'arr',                                 condition_obj : { type : [ 'profile'                                                ] },
 				structure : { type : 'obj', no_label : 1, structure : [
 					{ key : 'coord', type : 'float', default : 0, },
 					{ key : 'scl'  , type : 'float', default : 1, },
 				], }
 			},
-			{ key : 'copies'         , type : 'arr',                                 condition : function(p){ return [ 'copies'                                                 ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); },
+			{ key : 'copies'         , type : 'arr',                                 condition_obj : { type : [ 'copies'                                                 ] },
 				structure : { type : 'obj', no_label : 1, structure : [
 					{ key : 'transforms', type : 'arr', get_structure : function( p ){ return JL.functions.deep_copy( p.json_edit.get_structure(p.path.slice(0,2)).structure ); }, },
 				], }
 			},
-			{ key : 'proportional'   , type : 'obj', optional : 1,                   condition : function(p){ return [ 'translate', 'rotate', 'scale',                          ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); },
+			{ key : 'proportional'   , type : 'obj', optional : 1,                   condition_obj : { type : [ 'translate', 'rotate', 'scale',                          ] },
 				structure : [
 					{ key : 'center'     , type : 'arr'     , length : 3, structure : { type : 'float', no_label : 1, }, },
 					{ key : 'radius'     , type : 'float'   , default : 0, },
@@ -17605,7 +17626,7 @@ JL.webgl.graphics_object._main.prototype._inputs = [
 					{ key : 'falloff_exp', type : 'float'   , default : 1, condition : function(p){ return ( p.json_edit.get_value(p.path.slice(0,3).concat(['falloff']),p.root_value) == 'exp' ); }, },
 				],
 			},
-			{ key : 'condition', type : 'function', optional : 1,                    condition : function(p){ return [ 'translate', 'heightmap',                                ].includes(p.json_edit.get_value(p.path.slice().concat(['type']),p.root_value)); }, default : 'function( g_o, i ){ return ( g_o.v[ i + 1 ] > 0 ); }', },
+			{ key : 'condition', type : 'function', optional : 1,                    condition_obj : { type : [ 'translate', 'heightmap',                                ] }, default : 'function( g_o, i ){ return ( g_o.v[ i + 1 ] > 0 ); }', },
 		],
 	},
 	{ key : 'per_frame_functions', type : 'arr', no_this_assign : true, optional : true, structure : { type : 'function', no_label : true } },
@@ -17890,6 +17911,18 @@ JL.webgl.graphics_object._main.prototype._inputs = [
 	},
 	{ key : 'clamp_textures'  , type : 'bool', optional : true, },
 	{ key : 'texture_sampling', type : 'dropdown', optional : true, no_this_assign : true, options : [ 'LINEAR', 'NEAREST', ], },
+	
+
+	{ key : 'advanced'        , type : 'obj', optional : true, structure : [
+		{ key : 'vector_field', type : 'arr', optional : true, no_this_assign : true, structure : [
+			{ key : 'pos'        , type : 'arr'  , length : 3, structure : { type : 'float' } },
+			{ key : 'vec'        , type : 'arr'  , length : 3, structure : { type : 'float' } },
+			{ key : 'color'      , type : 'arr'  , length : 3, structure : { type : 'float' }, optional : 1, },
+			{ key : 'size'       , type : 'float', optional : 1, },
+			{ key : 'loop_dur'   , type : 'float', optional : 1, },
+			{ key : 'time_offset', type : 'float', optional : 1, },
+		] },
+	] },
 	{ key : '_paths_to_exclude_from_save', type : 'arr', optional : 1, hidden : 1, structure : { type : 'arr', no_label : 1, structure : { type : 'str', no_label : 1, } } },
 ];
 
@@ -17985,9 +18018,87 @@ JL.webgl.graphics_object._main.prototype.shared_init = function( p ){
 		}
 	}
 
-	if( p.instanced_vals ){
-		for(    var attr_name in p.instanced_vals ){
-			var attr      =  p.instanced_vals[            attr_name ];
+	var instanced_vals = undefined;
+
+	if( p.advanced ){
+		if( p.advanced.vector_field && p.advanced.vector_field.length ){
+			if( !this.properties         ) this.properties         = {};
+			if( !this.properties.effects ) this.properties.effects = [];
+
+			if( !instanced_vals ) instanced_vals = {};
+			instanced_vals.pos                         = { x : [], y : [], z : [] };
+			instanced_vals.pos_vector                  = { x : [], y : [], z : [] };
+			instanced_vals.rot                         = { roll : [], pitch : [], yaw : [] };
+			instanced_vals.pos_loop_dur                = { val : [] };
+			instanced_vals.pos_loop_time_offset        = { val : [] };
+			instanced_vals.alpha_mult_loop_dur         = { val : [] };
+			instanced_vals.alpha_mult_loop_time_offset = { val : [] };
+
+			this.properties.effects.push( "_instanced_pos", "_instanced_rot", "_instanced_pos_vector_loop", "_instanced_alpha_mult_loop" );
+
+			this.num_instances = p.advanced.vector_field.length;
+
+			var vector_1 = p.advanced.vector_field[0];
+			var loop_dur = vector_1.loop_dur || 1;
+			for( var v of p.advanced.vector_field ){
+				var vec  = [ 0, JL.functions.get_magnitude( v.vec ), 0 ];
+				var roll = 0; var pitch = 0; var yaw = 0;
+
+				var pitch = JL.functions.get_angle_between_2d({ center : [0,0], v1 : [vec[1],vec[2]], v2 : [ v.vec[1], v.vec[2] ] });
+				vec = JL.functions.vector_rotate_3d( vec, 'x', pitch );
+
+				var yaw   = JL.functions.get_angle_between_2d({ center : [0,0], v1 : [vec[0],vec[2]], v2 : [ v.vec[0], v.vec[2] ] });
+				vec = JL.functions.vector_rotate_3d( vec, 'y', yaw );
+
+				var roll  = JL.functions.get_angle_between_2d({ center : [0,0], v1 : [vec[0],vec[1]], v2 : [ v.vec[0], v.vec[1] ] });
+
+				vec = JL.functions.vector_rotate_3d( vec, 'z', roll );
+
+				instanced_vals.pos.x.push( v.pos[0] );
+				instanced_vals.pos.y.push( v.pos[1] );
+				instanced_vals.pos.z.push( v.pos[2] );
+
+				instanced_vals.rot.roll .push( roll  * JL.functions.constants.to_radians );
+				instanced_vals.rot.pitch.push( pitch * JL.functions.constants.to_radians );
+				instanced_vals.rot.yaw  .push( yaw   * JL.functions.constants.to_radians );
+
+				instanced_vals.pos_vector.x.push( vec[0] );
+				instanced_vals.pos_vector.y.push( vec[1] );
+				instanced_vals.pos_vector.z.push( vec[2] );
+
+				var v_loop_dur    = v.loop_dur || loop_dur;
+				var v_time_offset = v.time_offset || 0;
+
+				instanced_vals.pos_loop_dur        .val.push( v_loop_dur    );
+				instanced_vals.pos_loop_time_offset.val.push( v_time_offset );
+
+				instanced_vals.alpha_mult_loop_dur        .val.push( v_loop_dur    );
+				instanced_vals.alpha_mult_loop_time_offset.val.push( v_time_offset );
+			}
+
+			if( vector_1.size ){
+				instanced_vals.size = { size : [] };
+				this.properties.effects.push( "_instanced_size" );
+				for( var v of p.advanced.vector_field ) instanced_vals.size.size.push( v.size );
+			}
+
+			if( vector_1.color ){
+				instanced_vals.color = { r : [], g : [], b : [] };
+				this.properties.effects.push( "_instanced_color" );
+				for( var v of p.advanced.vector_field ){
+					instanced_vals.color.r.push( v.color[0] );
+					instanced_vals.color.g.push( v.color[1] );
+					instanced_vals.color.b.push( v.color[2] );                      
+				}
+			}
+		}
+	}
+
+	if( p.instanced_vals ) instanced_vals = Object.assign( instanced_vals || {}, p.instanced_vals );
+
+	if( instanced_vals ){
+		for(    var attr_name in instanced_vals ){
+			var attr      =  instanced_vals[              attr_name ];
 			var attr_cfg  = JL.webgl.shaders.config.attr[ attr_name ];
 
 			var field_names = attr_cfg.labels.map( x => x.label );
@@ -18029,7 +18140,7 @@ JL.webgl.graphics_object._main.prototype.shared_init = function( p ){
 
 	try{
 		for( var effect of JL.webgl.functions.get_instanced_fields( this.properties.effects || [] ) ){
-			var attr_cfg  = JL.webgl.shaders.config.attr[ effect.field ];
+			var attr_cfg = JL.webgl.shaders.config.attr[ effect.field ];
 
 			if( !this[ effect.field ] ) this[ effect.field ] = [];
 
@@ -19475,7 +19586,9 @@ JL.webgl.graphics_object._main.prototype.construct_from_faces_array = function( 
 	if( has_vt ) this.vt = [];
 
 	var curr_vertex_index = 0;
-	if( p.flat_shading ){
+	// TODO : test
+	if( 1 ){
+	// if( p.flat_shading ){
 		for( var face of faces ){
 			for( var vert of face ){
 				var v = vert.v.map( x => JL.functions.round( x, epsilon ) );

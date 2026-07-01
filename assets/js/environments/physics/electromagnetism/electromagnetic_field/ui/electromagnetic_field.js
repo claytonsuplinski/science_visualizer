@@ -75,14 +75,14 @@ JL.webgl.ui.item.electromagnetic_field.ui_onselect = function(){
 				{ key : 'loop', label : 'Vector Anim Loop', type : 'float', default :  5, },
 			] },
 			{ key : 'sources', type : 'arr', no_label : true, structure : [
-				{ key : 't' , label : 'Type'            , type : 'dropdown', default_first : true, options : [ 'point_charge', 'magnetic_dipole', 'infinite_wire', ], on_change : function( p ){ p.json_edit.draw(); } },
+				{ key : 't' , label : 'Type'            , type : 'dropdown', default_first : true, options : [ 'point_charge', 'magnetic_dipole', 'infinite_wire', ] },
 				{ key : 'ch' , label : 'Charge'         , type : 'float' },
 				{ key : 'pos', label : 'Position'       , type : 'arr'  , length : 3, structure : { type : 'float', default : 0, no_label : true, }, },
 				// TODO : Still need to implement
-				// { key : 'cur', label : 'Current'        , type : 'float', condition : function(p){ return [ 'infinite_wire',   ].includes(p.json_edit.get_value(p.path.slice().concat(['t']),p.root_value)); } },
-				// { key : 'vel', label : 'Velocity'       , type : 'arr'  , condition : function(p){ return [ 'point_charge',    ].includes(p.json_edit.get_value(p.path.slice().concat(['t']),p.root_value)); }, length : 3, structure : { type : 'float', default : 0, no_label : true, }, optional : 1, },
-				// { key : 'dir', label : 'Direction'      , type : 'arr'  , condition : function(p){ return [ 'infinite_wire',   ].includes(p.json_edit.get_value(p.path.slice().concat(['t']),p.root_value)); }, length : 3, structure : { type : 'float', default : 0, no_label : true, }, },
-				// { key : 'mm' , label : 'Magnetic Moment', type : 'arr'  , condition : function(p){ return [ 'magnetic_dipole', ].includes(p.json_edit.get_value(p.path.slice().concat(['t']),p.root_value)); }, length : 3, structure : { type : 'float', default : 0, no_label : true, }, },
+				// { key : 'cur', label : 'Current'        , type : 'float', condition_obj : { t : [ 'infinite_wire'   ] }, },
+				// { key : 'vel', label : 'Velocity'       , type : 'arr'  , condition_obj : { t : [ 'point_charge'    ] }, length : 3, structure : { type : 'float', default : 0, no_label : true, }, optional : 1, },
+				// { key : 'dir', label : 'Direction'      , type : 'arr'  , condition_obj : { t : [ 'infinite_wire'   ] }, length : 3, structure : { type : 'float', default : 0, no_label : true, }, },
+				// { key : 'mm' , label : 'Magnetic Moment', type : 'arr'  , condition_obj : { t : [ 'magnetic_dipole' ] }, length : 3, structure : { type : 'float', default : 0, no_label : true, }, },
 			] },
 		],
 	});
