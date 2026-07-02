@@ -5,14 +5,28 @@ Object.assign( JL.webgl.load.groups, {
 				init : function(callback){
 					var self = this;
 
+					var config = JL.functions.deep_copy( JL.webgl.hashlinks.get_val( 'config' ) || {} );
+
 					var instanced_vals = {
 						pos  : { x : [], y : [], z : [] },
 						size : { size : [] },
 					};
 
+					switch( config.t ){
+						case 'fern_3d':
+							config.res *= 1000;
+							break;
+						case 'custom_blob_3d':
+						case 'mandelbulb_3d':
+							config.res *= 10;
+							break;
+					}
+
+					var points = JL.fractals[ config.t ]( config.res, config.max_iter );
+
 					// -----------
-					var points = JL.fractals.custom_blob_3d( 100 );
-					var size_factor = 0.5;
+					// var points = JL.fractals.custom_blob_3d( 50 );
+					// var size_factor = 0.5;
 					// -----------
 					// var points = JL.fractals.mandelbulb_3d( 50, 6 );
 					// var size_factor = 0.5;
@@ -25,6 +39,8 @@ Object.assign( JL.webgl.load.groups, {
 					// -----------
 					// var points = JL.fractals.fern_3d( 5000 );
 					// -----------
+
+					var size_factor = config.size || 1;
 
 					var sizes = {};
 
@@ -59,8 +75,7 @@ Object.assign( JL.webgl.load.groups, {
 					JL.webgl.load.graphics_objects_list( this, [
 						{
 							label  : [ 'fractal' ],
-							type   : 'cube',
-							type   : 'sphere',
+							type   : config.pr || 'sphere',
 							params : {
 								textures   : [{ filename : './assets/textures/fractal.jpg', }],
 								properties : {
@@ -77,7 +92,7 @@ Object.assign( JL.webgl.load.groups, {
 			},
 		],
 		scripts : [
-			// "./assets/js/environments/math/fractals/ui/math_fractals.js",
+			"./assets/js/environments/math/patterns/fractals/ui/math_fractals.js",
 
 			// "./assets/js/environments/main/space_object/bowling_game.js",
 		]

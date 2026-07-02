@@ -71,7 +71,12 @@
 		{
 			"name"     : "Math",
 			"children" : [
-				{ "name" : "Fractals" }
+				{
+					"name"     : "Patterns",
+					"children" : [
+						{ "name" : "Fractals" }
+					]
+				}
 			]
 		}
 	]
